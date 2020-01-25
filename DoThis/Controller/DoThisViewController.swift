@@ -15,7 +15,6 @@ class DoThisViewController: NSViewController {
     
     @IBOutlet weak var tableView: NSTableView!
     
-    static let shared = DoThisViewController()
     var doThisItem: [DoThisItem] = []
     
     override func viewDidLoad() {
@@ -27,7 +26,7 @@ class DoThisViewController: NSViewController {
         let menu = NSMenu()
         menu.addItem(withTitle: "delete", action: #selector(deleteItem), keyEquivalent: "")
         tableView.menu = menu
-         getItems()
+        getItems()
         tableView.reloadData()
         NotificationCenter.default.addObserver(self, selector: #selector(reloadData), name: RELOAD_DATA, object: nil)
     }
@@ -41,33 +40,36 @@ class DoThisViewController: NSViewController {
     }
     
     @objc func doubleClicked() {
-        if let indexPath = tableView?.selectedRow {
-            if doThisItem[indexPath].completed {
-                doThisItem[indexPath].completed = false
-                (NSApplication.shared.delegate as? AppDelegate)?.saveAction(nil)
-                getItems()
-                tableView.reloadData()
-            } else {
-                doThisItem[indexPath].completed = true
-                (NSApplication.shared.delegate as? AppDelegate)?.saveAction(nil)
-                getItems()
-                tableView.reloadData()
+        if tableView.selectedRow >= 0 {
+            if let indexPath = tableView?.selectedRow {
+                if doThisItem[indexPath].completed {
+                    doThisItem[indexPath].completed = false
+                    (NSApplication.shared.delegate as? AppDelegate)?.saveAction(nil)
+                    getItems()
+                    tableView.reloadData()
+                } else {
+                    doThisItem[indexPath].completed = true
+                    (NSApplication.shared.delegate as? AppDelegate)?.saveAction(nil)
+                    getItems()
+                    tableView.reloadData()
+                }
             }
         }
     }
     
     @objc func deleteItem() {
-      if let indexPath = tableView?.selectedRow {
-            let items = doThisItem[indexPath]
-            if let context = (NSApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext {
-                context.delete(items)
-                (NSApplication.shared.delegate as? AppDelegate)?.saveAction(nil)
-                getItems()
-                tableView.reloadData()
+        if tableView.selectedRow >= 0 {
+            if let indexPath = tableView?.selectedRow {
+                let items = doThisItem[indexPath]
+                if let context = (NSApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext {
+                    context.delete(items)
+                    (NSApplication.shared.delegate as? AppDelegate)?.saveAction(nil)
+                    getItems()
+                    tableView.reloadData()
+                }
             }
         }
     }
-    
     func getItems() {
         if let context = (NSApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext {
             do{
@@ -83,9 +85,7 @@ extension DoThisViewController: NSTableViewDataSource {
     func numberOfRows(in tableView: NSTableView) -> Int {
         return doThisItem.count
     }
-}
-
-extension DoThisViewController: NSTableViewDelegate {
+    
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: "itemCell"), owner: nil) as? NSTableCellView
         if let nameLabel = cell?.viewWithTag(0) as? NSTextField {
@@ -101,7 +101,13 @@ extension DoThisViewController: NSTableViewDelegate {
         return cell
     }
     
+    
     func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
         return 50.0
     }
+    
+}
+
+extension DoThisViewController: NSTableViewDelegate {
+    
 }
